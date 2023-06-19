@@ -1,0 +1,5 @@
+set_keys.py
+memory/vector_store
+memory/.chroma
+__pycache__
+.vscode

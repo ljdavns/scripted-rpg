@@ -1,0 +1,8 @@
+PROJECT_BASE_DIR = '/root/scripted-rpg'
+
+DOC_PATH = PROJECT_BASE_DIR + '/docs'
+VECTORSTORE_PINECONE_ENV = 'rpg'
+VECSTORE_PATH_FAISS = PROJECT_BASE_DIR + '/memory/vector_store/FAISS'
+VECSTORE_PATH_CHROMA = PROJECT_BASE_DIR + '/memory/vector_store/Chroma'
+
+GPT4_ENABLED = False

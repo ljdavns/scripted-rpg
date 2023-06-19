@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #output {
+            width: 90%;
+            height: 80vh;
+            border: 1px solid white;
+            padding: 10px;
+            overflow-y: scroll;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1.6;
+        }
+        .input-wrapper {
+            width: 90%;
+            height: 50px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: none;
+            border-radius: 25px;
+            background: #333;
+        }
+        #input {
+            flex-grow: 1;
+            height: 100%;
+            padding: 10px 20px; /* increased left padding */
+            font-size: 18px;
+            border: none;
+            outline: none;
+            color: #fff;
+            background: transparent;
+        }
+        #send-button {
+            margin-right: 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            outline: none;
+            color: #fff;
+            background: #222;
+            cursor: pointer;
+        }
+        #input::placeholder {
+            color: #999;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <div id="output"></div>
+    <div class="input-wrapper">
+        <input id="input" type="text" placeholder="Enter your commands here">
+        <button id="send-button">→</button> <!-- Replaced "Send" with "→" -->
+    </div>
+    <script>
+        let output = document.getElementById('output');
+        let input = document.getElementById('input');
+        let sendButton = document.getElementById('send-button');
+
+        window.onload = () => {
+            typeWrite("You find yourself in a dark room. You're unsure how you got here or where *here* is. "
+            + "A dim light flickers somewhere above you, casting dancing shadows on the cold stone walls "
+            + "What do you want to do?");
+        }
+
+        input.addEventListener('keydown', function(e) {
+            if (e.keyCode == 13) {
+                processInput();
+            }
+        });
+
+        sendButton.addEventListener('click', processInput);
+
+        function processInput() {
+            typeWrite(input.value + "\n", true);
+            handleCommand(input.value.toLowerCase());
+            input.value = "";
+        }
+
+        function handleCommand(command) {
+            if (command === 'look around') {
+                setTimeout(() => {
+                    typeWrite("You see a door to your north. The rest of the room is barren.");
+                }, 1000);
+            }
+        }
+
+        function typeWrite(text, isUser = false) {
+            let i = 0;
+            let fullText = "";
+            let intervalId = setInterval(() => {
+                if(i < text.length) {
+                    fullText += text.charAt(i);
+                    output.innerHTML += text.charAt(i);
+                    output.scrollTop = output.scrollHeight;
+                    i++;
+                } else {
+                    if (!isUser) {
+                        output.innerHTML += "\n> ";
+                    }
+                    clearInterval(intervalId);
+                }
+            }, 8);
+        }
+    </script>
+</body>
+</html>

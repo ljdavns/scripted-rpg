@@ -1,0 +1,12 @@
+langchain
+openAI
+google-search-results
+pypdf
+chromadb
+unstructured[local-inference]
+# pysqlite3
+# apscheduler
+tiktoken
+faiss-cpu
+pinecone-client
+flask
