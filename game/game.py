@@ -48,27 +48,46 @@ class Game:
 
     def story_loop(self, player_input):
         result = ''
+        chapter_end = False
         story_end = False
-        if (self.story_started):
-            prompt = RpgPrompt.CHAPTER_START_PROMPT.value.format(player_input, 1, self.story.get_current_chapter())
+        if (not self.story_started):
+            # system_prompt = RpgPrompt.STORY_START_PROMPT.value.format(player_input, 1, self.story.get_current_chapter())
+            # chat_history = get_chat_history(self.id)
+            # chat_history += [SystemMessage(content=system_prompt)]
+            # result = bot_generate(self.id, self.story.get_current_plot(), message_type='AI', chat_history=chat_history)
+            # # result = bot_generate(self.id, system_prompt, message_type='system', chat_history=chat_history)
+            prompt = RpgPrompt.PLOT_UPDATE_PROMPT.value.format('select character' + player_input, self.story.get_current_plot())
             result = bot_generate(self.id, prompt, message_type='system')
+            self.story_started = True
         else:
-            prompt = RpgPrompt.PLOT_UPDATE_PROMPT.value.format(player_input)
+            next_plot, chapter_end, story_end = self.story.update()
+            # chat_history = get_chat_history(self.id)
+            # chat_history.append(HumanMessage(content=player_input))
+            prompt = RpgPrompt.PLOT_UPDATE_PROMPT.value.format(player_input, next_plot)
             result = bot_generate(self.id, prompt, message_type='system')
-        if ('章节结束' in result):
-            story_end = self.story.update_chapter()
-            if (not story_end):
-                summarize_result = bot_generate(self.id, RpgPrompt.SUMMARIZE_CHAPTER_PROMPT, message_type='system')
-                chat_history = get_chat_history(self.id)
-                new_chat_history = chat_history[:5]
-                clear_chat_history(self.id)
-                new_message = SystemMessage(content=RpgPrompt.CHAPTER_START_PROMPT.value.format(self.story.current_chapter_index+1, summarize_result, self.story.get_current_chapter()))
-                result = bot_generate(self.id, new_message, message_type='system', chat_history=new_chat_history)
+            # result = bot_generate(self.id, player_input, message_type='human')
+        if (chapter_end and (not story_end)):
+            summarize_result = bot_generate(self.id, RpgPrompt.SUMMARIZE_CHAPTER_PROMPT, message_type='system')
+            chat_history = get_chat_history(self.id)
+            new_chat_history = chat_history[:5]
+            clear_chat_history(self.id)
+            new_message = SystemMessage(content=RpgPrompt.CHAPTER_START_PROMPT.value.format(self.story.current_chapter_index+1, summarize_result, self.story.get_current_chapter()))
+            result = bot_generate(self.id, new_message, message_type='system', chat_history=new_chat_history)
+        # if ('章节结束' in result):
+        #     story_end = self.story.update_chapter()
+        #     if (not story_end):
+        #         summarize_result = bot_generate(self.id, RpgPrompt.SUMMARIZE_CHAPTER_PROMPT, message_type='system')
+        #         chat_history = get_chat_history(self.id)
+        #         new_chat_history = chat_history[:5]
+        #         clear_chat_history(self.id)
+        #         new_message = SystemMessage(content=RpgPrompt.CHAPTER_START_PROMPT.value.format(self.story.current_chapter_index+1, summarize_result, self.story.get_current_chapter()))
+        #         result = bot_generate(self.id, new_message, message_type='system', chat_history=new_chat_history)
         return result, story_end
 
 
 if __name__ == "__main__":
     story = Story('the_rats_in_the_walls')
+    print(story.intro)
     game = Game(story)
     print(game.start())
     while True:

@@ -14,6 +14,8 @@ class Story:
     reveal: str = ''
     chapters: list = []
     current_chapter_index: int = 0
+    current_plots: list = []
+    current_plot_index: int = 0
 
     def __init__(self, story_name):
         self.story_path = config.DOC_PATH + '/' + story_name
@@ -21,7 +23,7 @@ class Story:
         self.intro = self._get_intro()
         self.reveal = self._get_reveal()
         self.chapters = self._get_chapters()
-        pass
+        self.current_plots = self._get_current_plots()
 
     def _get_intro(self):
         intro_path = self.story_path + '/intro.txt'
@@ -41,14 +43,35 @@ class Story:
             chapters_str = f.read()
         chapters = list(map(lambda chapter: chapter + 'CHAPTER END', chapters_str.split('CHAPTER END')[:-1]))
         return chapters
+    
+    def _get_current_plots(self):
+        return self.chapters[self.current_chapter_index].split('\n')[1:]
+    
+    def _update_plot(self):
+        self.current_plot_index += 1
+        if self.current_plot_index >= len(self.current_plots):
+            return True
+        return False
 
-    def update_chapter(self):
+    def _update_chapter(self):
         self.current_chapter_index += 1
         if self.current_chapter_index >= len(self.chapters):
             return True
+        self.current_plots = self._get_current_plots()
+        return False
+    
+    def update(self):
+        chapter_end = self._update_plot()
+        story_end = False
+        if chapter_end:
+            story_end = self._update_chapter()
+        return self.current_plots[self.current_plot_index], chapter_end, story_end
 
     def get_current_chapter(self):
         return self.chapters[self.current_chapter_index]
+    
+    def get_current_plot(self):
+        return self.current_plots[self.current_plot_index]
 
     def summarize_current_chapter(self):
         pass

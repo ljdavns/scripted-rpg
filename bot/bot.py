@@ -73,6 +73,13 @@ def get_chat_history(game_id='GAME1', limit=0):
     if game_id not in user_chat_history:
         return []
     chat_history = user_chat_history[game_id]
+    return chat_history[-limit:]
+
+def get_chat_history_content(game_id='GAME1', limit=0):
+    # convert the message objects to `xxMessage`:`content``
+    if game_id not in user_chat_history:
+        return []
+    chat_history = user_chat_history[game_id]
     chat_history_content = ["{}:{}".format(type(message).__name__, message.content) for message in chat_history]
     return chat_history_content[-limit:]
 
