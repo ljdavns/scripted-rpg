@@ -24,6 +24,8 @@ class Story:
         self.reveal = self._get_reveal()
         self.chapters = self._get_chapters()
         self.current_plots = self._get_current_plots()
+        # test
+        self.current_plot_index = 8
 
     def _get_intro(self):
         intro_path = self.story_path + '/intro.txt'
@@ -41,7 +43,7 @@ class Story:
         chapters_path = self.story_path + '/chapters.md'
         with open(chapters_path, 'r') as f:
             chapters_str = f.read()
-        chapters = list(map(lambda chapter: chapter + 'CHAPTER END', chapters_str.split('CHAPTER END')[:-1]))
+        chapters = list(map(lambda chapter: chapter, chapters_str.split('CHAPTER END  \n')[:-1]))
         return chapters
     
     def _get_current_plots(self):
@@ -82,4 +84,5 @@ class Story:
    
 
 if __name__ == "__main__":
+    story = Story('the_rats_in_the_walls')
     pass

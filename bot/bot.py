@@ -54,7 +54,7 @@ def bot_generate(game_id: str, message: str, history_enabled=True, write_to_hist
         new_message = AIMessage(content=message)
     else:
         raise ValueError("message_type should be one of 'human', 'system' or 'AI'")
-    chat = ChatOpenAI(model_name="gpt-4" if config.GPT4_ENABLED else "gpt-3.5-turbo-16k", temperature=temperature)
+    chat = ChatOpenAI(model_name="gpt-4" if config.GPT4_ENABLED else "gpt-3.5-turbo-16k", temperature=temperature, streaming=False)
     if history_enabled:
         if game_id not in user_chat_history:
             user_chat_history[game_id] = base_messages.copy()
@@ -87,6 +87,9 @@ def clear_chat_history(game_id='GAME1'):
     if game_id not in user_chat_history:
         return
     user_chat_history[game_id] = base_messages.copy()
+
+def reset_chat_history(game_id='GAME1', chat_history=[]):
+    user_chat_history[game_id] = chat_history
 
 #todo
 def update_history(model: ChatOpenAI, game_id):

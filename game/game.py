@@ -5,7 +5,7 @@ import config
 from enum import Enum
 from prompt.prompt import GameStages, RpgPrompt
 from story import Story
-from bot.bot import bot_generate, clear_chat_history, get_chat_history
+from bot.bot import bot_generate, reset_chat_history, get_chat_history
 from langchain.schema import (
     AIMessage,
     HumanMessage,
@@ -67,12 +67,13 @@ class Game:
             result = bot_generate(self.id, prompt, message_type='system')
             # result = bot_generate(self.id, player_input, message_type='human')
         if (chapter_end and (not story_end)):
-            summarize_result = bot_generate(self.id, RpgPrompt.SUMMARIZE_CHAPTER_PROMPT, message_type='system')
+            summarized_result = bot_generate(self.id, RpgPrompt.SUMMARIZE_CHAPTER_PROMPT.value, message_type='system')
             chat_history = get_chat_history(self.id)
-            new_chat_history = chat_history[:5]
-            clear_chat_history(self.id)
-            new_message = SystemMessage(content=RpgPrompt.CHAPTER_START_PROMPT.value.format(self.story.current_chapter_index+1, summarize_result, self.story.get_current_chapter()))
-            result = bot_generate(self.id, new_message, message_type='system', chat_history=new_chat_history)
+            new_chat_history = chat_history[:2] + chat_history[-4:-2] + \
+                [SystemMessage(content=RpgPrompt.PREVIOUS_SUMMARIZED_CHAPTERS_PROMPT.value.format(summarized_result))]
+            reset_chat_history(self.id, new_chat_history)
+            # new_message = SystemMessage(content=RpgPrompt.CHAPTER_START_PROMPT.value.format(self.story.current_chapter_index+1, summarize_result, self.story.get_current_chapter()))
+            # result = bot_generate(self.id, new_message, message_type='system', chat_history=new_chat_history)
         # if ('章节结束' in result):
         #     story_end = self.story.update_chapter()
         #     if (not story_end):
