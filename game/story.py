@@ -25,7 +25,8 @@ class Story:
         self.chapters = self._get_chapters()
         self.current_plots = self._get_current_plots()
         # test
-        self.current_plot_index = 8
+        self.current_chapter_index = 3
+        self.current_plot_index = 0
 
     def _get_intro(self):
         intro_path = self.story_path + '/intro.txt'

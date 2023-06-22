@@ -10,6 +10,7 @@ import sys
 sys.path.append(str(Path.cwd().parent))
 import set_keys
 import config
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 model_token_mapping = {
     "gpt-4": 8192,
@@ -43,7 +44,7 @@ base_messages = [
 #clone a chat_history with base_messages
 user_chat_history = {}
 
-def bot_generate(game_id: str, message: str, history_enabled=True, write_to_history=True, temperature=0.7, message_type='human', chat_history=[]):
+def bot_generate(game_id: str, message: str, history_enabled=True, write_to_history=True, temperature=0.7, message_type='human', chat_history=[], streaming=False):
     if len(chat_history) > 0:
         user_chat_history[game_id] = chat_history
     if message_type == 'human':
@@ -54,7 +55,7 @@ def bot_generate(game_id: str, message: str, history_enabled=True, write_to_hist
         new_message = AIMessage(content=message)
     else:
         raise ValueError("message_type should be one of 'human', 'system' or 'AI'")
-    chat = ChatOpenAI(model_name="gpt-4" if config.GPT4_ENABLED else "gpt-3.5-turbo-16k", temperature=temperature, streaming=False)
+    chat = ChatOpenAI(model_name="gpt-4" if config.GPT4_ENABLED else "gpt-3.5-turbo-16k", temperature=temperature, streaming=streaming, callbacks=[StreamingStdOutCallbackHandler()])
     if history_enabled:
         if game_id not in user_chat_history:
             user_chat_history[game_id] = base_messages.copy()
@@ -103,7 +104,7 @@ def update_history(model: ChatOpenAI, game_id):
         return chat_history_as_text
 
 if __name__ == "__main__":
-    human_message = "你好，请介绍你自己"
-    AI_message = bot_generate('GAME1', human_message)
+    human_message = "你好，请为我生成一个rpg游戏的详细开头"
+    AI_message = bot_generate('GAME1', human_message, streaming=True)
     print(get_chat_history())
     print("AI: " + AI_message)

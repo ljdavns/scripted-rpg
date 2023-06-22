@@ -63,7 +63,7 @@ class Game:
             next_plot, chapter_end, story_end = self.story.update()
             # chat_history = get_chat_history(self.id)
             # chat_history.append(HumanMessage(content=player_input))
-            prompt = RpgPrompt.PLOT_UPDATE_PROMPT.value.format(player_input, next_plot)
+            prompt = RpgPrompt.PLOT_UPDATE_PROMPT.value.format(player_input, next_plot) if (not story_end) else RpgPrompt.PLOT_UPDATE_END_PROMPT.value.format(player_input, next_plot)
             result = bot_generate(self.id, prompt, message_type='system')
             # result = bot_generate(self.id, player_input, message_type='human')
         if (chapter_end and (not story_end)):

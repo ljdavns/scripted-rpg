@@ -9,4 +9,5 @@ unstructured[local-inference]
 tiktoken
 faiss-cpu
 pinecone-client
-flask
+fastapi
+uvicorn

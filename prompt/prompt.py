@@ -81,6 +81,9 @@ class RpgPrompt(Enum):
     PLOT_UPDATE_PROMPT: str = "The player has made an [action] `{}`. \
         Please update the story to the [later plot] of `{}`, and produce an opening passage of players' action to the new plot before transitioning into the next fixed storyline. \
         After updating the plot, let the players input custom action."
+    PLOT_UPDATE_END_PROMPT: str = "The player has made an [action] `{}`. \
+        Please update the story to the [later plot] of `{}`, and produce an opening passage of players' action to the new plot before transitioning into the next fixed storyline. \
+        Then just output only the storyline to user, do not output the notice to let the player input action."
     SUMMARIZE_CHAPTER_PROMPT: str = "Now this chapter is end, please summarize all the stories of the post chapters after the players pick characters."
     PREVIOUS_SUMMARIZED_CHAPTERS_PROMPT: str = "The previous chapters' summarized stories are: `{}`."
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <style>
         body {
@@ -12,6 +13,7 @@
             justify-content: center;
             height: 100vh;
         }
+
         #output {
             width: 90%;
             height: 80vh;
@@ -24,6 +26,7 @@
             font-weight: bold;
             line-height: 1.6;
         }
+
         .input-wrapper {
             width: 90%;
             height: 50px;
@@ -35,16 +38,19 @@
             border-radius: 25px;
             background: #333;
         }
+
         #input {
             flex-grow: 1;
             height: 100%;
-            padding: 10px 20px; /* increased left padding */
+            padding: 10px 20px;
+            /* increased left padding */
             font-size: 18px;
             border: none;
             outline: none;
             color: #fff;
             background: transparent;
         }
+
         #send-button {
             margin-right: 10px;
             padding: 10px 20px;
@@ -55,12 +61,15 @@
             background: #222;
             cursor: pointer;
         }
+
         #input::placeholder {
             color: #999;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
+
 <body>
     <div id="output"></div>
     <div class="input-wrapper">
@@ -74,11 +83,11 @@
 
         window.onload = () => {
             typeWrite("You find yourself in a dark room. You're unsure how you got here or where *here* is. "
-            + "A dim light flickers somewhere above you, casting dancing shadows on the cold stone walls "
-            + "What do you want to do?");
+                + "A dim light flickers somewhere above you, casting dancing shadows on the cold stone walls "
+                + "What do you want to do?");
         }
 
-        input.addEventListener('keydown', function(e) {
+        input.addEventListener('keydown', function (e) {
             if (e.keyCode == 13) {
                 processInput();
             }
@@ -94,9 +103,38 @@
 
         function handleCommand(command) {
             if (command === 'look around') {
-                setTimeout(() => {
-                    typeWrite("You see a door to your north. The rest of the room is barren.");
-                }, 1000);
+                // Make a POST request
+                fetch('http://localhost:8000/bot', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        command: command
+                    })
+                }).then(response => {
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder('utf-8');
+
+                    // Recursive function to process each data chunk
+                    function processChunk({ done, value }) {
+                        if (done) {
+                            typeWriteStream("\n> ");
+                            console.log('Stream complete');
+                            return;
+                        }
+
+                        // Decode the Uint8Array to a string and send to typeWrite()
+                        typeWriteStream(decoder.decode(value));
+                        // Read the next chunk
+                        return reader.read().then(processChunk);
+                    }
+
+                    // Start reading the stream
+                    return reader.read().then(processChunk);
+                }).catch(err => {
+                    console.error("Error: ", err);
+                });
             }
         }
 
@@ -104,7 +142,7 @@
             let i = 0;
             let fullText = "";
             let intervalId = setInterval(() => {
-                if(i < text.length) {
+                if (i < text.length) {
                     fullText += text.charAt(i);
                     output.innerHTML += text.charAt(i);
                     output.scrollTop = output.scrollHeight;
@@ -117,6 +155,14 @@
                 }
             }, 8);
         }
+
+        function typeWriteStream(text) {
+            output.innerHTML += text;
+            output.scrollTop = output.scrollHeight;
+        }
+
+
     </script>
 </body>
+
 </html>
