@@ -11,6 +11,9 @@ sys.path.append(str(Path.cwd().parent))
 import set_keys
 import config
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+import threading
+import queue
+from langchain.callbacks.base import BaseCallbackManager
 
 model_token_mapping = {
     "gpt-4": 8192,
@@ -44,7 +47,41 @@ base_messages = [
 #clone a chat_history with base_messages
 user_chat_history = {}
 
-def bot_generate(game_id: str, message: str, history_enabled=True, write_to_history=True, temperature=0.7, message_type='human', chat_history=[], streaming=False):
+class ThreadedGenerator:
+    def __init__(self):
+        self.queue = queue.Queue()
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        item = self.queue.get()
+        if item is StopIteration: raise item
+        return item
+
+    def send(self, data):
+        self.queue.put(data)
+
+    def close(self):
+        self.queue.put(StopIteration)
+
+class ChainStreamHandler(StreamingStdOutCallbackHandler):
+    def __init__(self, gen):
+        super().__init__()
+        self.gen = gen
+
+    def on_llm_new_token(self, token: str, **kwargs):
+        self.gen.send(token)
+
+def bot_generate_stream(**kwargs):
+    g = ThreadedGenerator()
+    kwargs['streaming'] = True
+    kwargs['callback_manager'] = BaseCallbackManager([ChainStreamHandler(g)])
+    kwargs['thread_generator'] = g
+    threading.Thread(target=bot_generate, kwargs=kwargs).start()
+    return g
+
+def bot_generate(game_id: str, message: str, history_enabled=True, write_to_history=True, temperature=0.7, message_type='human', chat_history=[], streaming=False, callback_manager=None, thread_generator:ThreadedGenerator=None):
     if len(chat_history) > 0:
         user_chat_history[game_id] = chat_history
     if message_type == 'human':
@@ -55,19 +92,23 @@ def bot_generate(game_id: str, message: str, history_enabled=True, write_to_hist
         new_message = AIMessage(content=message)
     else:
         raise ValueError("message_type should be one of 'human', 'system' or 'AI'")
-    chat = ChatOpenAI(model_name="gpt-4" if config.GPT4_ENABLED else "gpt-3.5-turbo-16k", temperature=temperature, streaming=streaming, callbacks=[StreamingStdOutCallbackHandler()])
-    if history_enabled:
-        if game_id not in user_chat_history:
-            user_chat_history[game_id] = base_messages.copy()
-        chat_history = user_chat_history[game_id]
-        AI_message = chat(chat_history + [new_message])
-        if write_to_history:
-            chat_history.append(new_message)
-            chat_history.append(AI_message)
-        # update_history(chat, game_id)
-    else:
-        AI_message = chat(base_messages + [new_message])
-    return AI_message.content
+    chat = ChatOpenAI(model_name="gpt-4" if config.GPT4_ENABLED else "gpt-3.5-turbo-16k", temperature=temperature, streaming=streaming, callback_manager=callback_manager)
+    try:
+        if history_enabled:
+            if game_id not in user_chat_history:
+                user_chat_history[game_id] = base_messages.copy()
+            chat_history = user_chat_history[game_id]
+            AI_message = chat(chat_history + [new_message])
+            if write_to_history:
+                chat_history.append(new_message)
+                chat_history.append(AI_message)
+            # update_history(chat, game_id)
+        else:
+            AI_message = chat(base_messages + [new_message])
+    finally:
+        if streaming:
+            thread_generator.close()
+    return AI_message.content 
 
 def get_chat_history(game_id='GAME1', limit=0):
     # convert the message objects to `xxMessage`:`content``

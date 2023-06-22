@@ -68,13 +68,16 @@
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 
 <body>
     <div id="output"></div>
     <div class="input-wrapper">
-        <input id="input" type="text" placeholder="Enter your commands here">
-        <button id="send-button">→</button> <!-- Replaced "Send" with "→" -->
+        <input id="input" type="text" placeholder="Enter your next action here...">
+        <button id="send-button">
+            <i class="fas fa-paper-plane"></i>
+        </button>
     </div>
     <script>
         let output = document.getElementById('output');
@@ -102,40 +105,38 @@
         }
 
         function handleCommand(command) {
-            if (command === 'look around') {
-                // Make a POST request
-                fetch('http://localhost:8000/bot', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        command: command
-                    })
-                }).then(response => {
-                    const reader = response.body.getReader();
-                    const decoder = new TextDecoder('utf-8');
 
-                    // Recursive function to process each data chunk
-                    function processChunk({ done, value }) {
-                        if (done) {
-                            typeWriteStream("\n> ");
-                            console.log('Stream complete');
-                            return;
-                        }
+            fetch('http://localhost:8000/bot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: command
+                })
+            }).then(response => {
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
 
-                        // Decode the Uint8Array to a string and send to typeWrite()
-                        typeWriteStream(decoder.decode(value));
-                        // Read the next chunk
-                        return reader.read().then(processChunk);
+                // Recursive function to process each data chunk
+                function processChunk({ done, value }) {
+                    if (done) {
+                        typeWriteStream("\n> ");
+                        console.log('Stream complete');
+                        return;
                     }
 
-                    // Start reading the stream
+                    // Decode the Uint8Array to a string and send to typeWrite()
+                    typeWriteStream(decoder.decode(value));
+                    // Read the next chunk
                     return reader.read().then(processChunk);
-                }).catch(err => {
-                    console.error("Error: ", err);
-                });
-            }
+                }
+
+                // Start reading the stream
+                return reader.read().then(processChunk);
+            }).catch(err => {
+                console.error("Error: ", err);
+            });
         }
 
         function typeWrite(text, isUser = false) {
