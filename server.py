@@ -20,6 +20,7 @@ from langchain.schema import (
 from bot.bot import bot_generate_stream
 from game.story import Story
 from game.game import Game
+from pydantic import BaseModel
 
 app = FastAPI(
     title="Langchain AI API",
@@ -33,9 +34,16 @@ game = Game(story, bot_generate_stream)
 async def startup():
     print("Server Startup!")
 
+@app.post("/get-intro")
+def start():
+    return game.get_intro()
+
+class Command(BaseModel):
+    message: str
+
 @app.post("/bot")
-async def stream():
-    return StreamingResponse(game.update("继续"), media_type='text/event-stream')
+async def stream(command: Command):
+    return StreamingResponse(game.update(command.message), media_type='text/event-stream')
 
 from pathlib import Path
 from fastapi.responses import HTMLResponse

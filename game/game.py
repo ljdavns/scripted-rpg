@@ -25,8 +25,13 @@ class Game:
         self.story = story
         self.bot_callback = bot_callback
 
-    def start(self):
-        return self.update()
+    def get_intro(self):
+        import re
+        def remove_text_after(string, target):
+            pattern = re.escape(target) + r".*"
+            new_string = re.sub(pattern, "", string, flags=re.DOTALL)
+            return new_string
+        return remove_text_after(self.story.intro, "游戏开始").strip() + "\n游戏开始："
 
     def update(self, player_input: str = None):
         update_stage = True
@@ -90,7 +95,7 @@ class Game:
 
 if __name__ == "__main__":
     story = Story('the_rats_in_the_walls')
-    print(story.intro)
+    # print(story.intro)
     game = Game(story, bot_generate)
     print(game.start())
     while True:

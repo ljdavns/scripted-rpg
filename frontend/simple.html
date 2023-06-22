@@ -85,9 +85,13 @@
         let sendButton = document.getElementById('send-button');
 
         window.onload = () => {
-            typeWrite("You find yourself in a dark room. You're unsure how you got here or where *here* is. "
-                + "A dim light flickers somewhere above you, casting dancing shadows on the cold stone walls "
-                + "What do you want to do?");
+            axios.post("http://localhost:8000/get-intro")
+                .then(res => {
+                    console.log(res)
+                    typeWrite(res.data, true, () => {
+                        handleCommand('start');
+                    })
+                })
         }
 
         input.addEventListener('keydown', function (e) {
@@ -105,7 +109,6 @@
         }
 
         function handleCommand(command) {
-
             fetch('http://localhost:8000/bot', {
                 method: 'POST',
                 headers: {
@@ -139,7 +142,7 @@
             });
         }
 
-        function typeWrite(text, isUser = false) {
+        function typeWrite(text, isUser = false, callback = null) {
             let i = 0;
             let fullText = "";
             let intervalId = setInterval(() => {
@@ -153,6 +156,7 @@
                         output.innerHTML += "\n> ";
                     }
                     clearInterval(intervalId);
+                    if(callback) callback();
                 }
             }, 8);
         }
