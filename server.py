@@ -17,10 +17,11 @@ from langchain.schema import (
     SystemMessage
 )
 
-from bot.bot import bot_generate_stream
+from bot.bot import bot_generate_stream, bot_generate
 from game.story import Story
 from game.game import Game
 from pydantic import BaseModel
+from prompt.prompt import RpgPrompt
 
 app = FastAPI(
     title="Langchain AI API",
@@ -44,6 +45,10 @@ class Command(BaseModel):
 @app.post("/bot")
 async def stream(command: Command):
     return StreamingResponse(game.update(command.message), media_type='text/event-stream')
+
+@app.post("/get-image-prompt")
+def get_image_prompt(command: Command):
+    return bot_generate(game_id='default_game', message=RpgPrompt.IMAGE_PROMPT.value.format(command.message), history_enabled=False, message_type='system')
 
 from pathlib import Path
 from fastapi.responses import HTMLResponse

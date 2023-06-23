@@ -25,6 +25,24 @@
             font-size: 20px;
             font-weight: bold;
             line-height: 1.6;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            /* Aligns items to the top of the container */
+
+        }
+
+        #output img {
+            margin: 10px 1.6%;
+            width: 30%;
+            /* Adjust this to your desired width */
+            height: auto;
+        }
+
+        .image-wrapper {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
         }
 
         .input-wrapper {
@@ -88,7 +106,7 @@
             axios.post("http://localhost:8000/get-intro")
                 .then(res => {
                     console.log(res)
-                    typeWrite(res.data, true, () => {
+                    typeWrite(res.data, false, () => {
                         handleCommand('start');
                     })
                 })
@@ -109,6 +127,7 @@
         }
 
         function handleCommand(command) {
+            full_text = ""
             fetch('http://localhost:8000/bot', {
                 method: 'POST',
                 headers: {
@@ -124,13 +143,15 @@
                 // Recursive function to process each data chunk
                 function processChunk({ done, value }) {
                     if (done) {
-                        typeWriteStream("\n> ");
+                        typeWriteStream("\n");
                         console.log('Stream complete');
+                        genImage(full_text)
                         return;
                     }
-
                     // Decode the Uint8Array to a string and send to typeWrite()
-                    typeWriteStream(decoder.decode(value));
+                    cur_roken = decoder.decode(value);
+                    full_text += cur_roken
+                    typeWriteStream(cur_roken);
                     // Read the next chunk
                     return reader.read().then(processChunk);
                 }
@@ -145,6 +166,9 @@
         function typeWrite(text, isUser = false, callback = null) {
             let i = 0;
             let fullText = "";
+            if (isUser) {
+                output.innerHTML += "> ";
+            }
             let intervalId = setInterval(() => {
                 if (i < text.length) {
                     fullText += text.charAt(i);
@@ -152,11 +176,8 @@
                     output.scrollTop = output.scrollHeight;
                     i++;
                 } else {
-                    if (!isUser) {
-                        output.innerHTML += "\n> ";
-                    }
                     clearInterval(intervalId);
-                    if(callback) callback();
+                    if (callback) callback();
                 }
             }, 8);
         }
@@ -164,6 +185,53 @@
         function typeWriteStream(text) {
             output.innerHTML += text;
             output.scrollTop = output.scrollHeight;
+        }
+
+        function genImage(prompt) {
+            axios.post("http://localhost:8000/get-image-prompt", {
+                message: prompt
+            })
+                .then(res => {
+                    console.log(res)
+                    const url = 'http://127.0.0.1:7860';
+                    const payload = {
+                        prompt: res.data + ',<lora:VintagePhotos-10:0.85>,retro artstyle, (horror (theme))',
+                        steps: 20,
+                        cfg_scale: 7,
+                        negative_prompt: "EasyNegativeV2, Bad Image v4, bad-hands-5",
+                        sampler_name: "DPM++ 2M Karras",
+                        width: 512,
+                        height: 512,
+                        batch_size: 3
+                    };
+                    axios.post(url + '/sdapi/v1/txt2img', payload)
+                        .then(function (response) {
+                            const images = response.data.images;
+                            for (let i = 0; i < images.length; i++) {
+                                const imageSrc = 'data:image/png;base64,' + images[i].split(",", 1)[0];
+                                const png_payload = {
+                                    image: imageSrc
+                                };
+                                axios.post(url + '/sdapi/v1/png-info', png_payload)
+                                    .then(function (response2) {
+
+                                        // Create a new img element for each image
+                                        let imgElement = document.createElement('img');
+                                        imgElement.src = imageSrc;
+                                        imgElement.alt = 'Generated Image ' + (i + 1);
+                                        // Append the image to the output element instead of the body
+                                        output.appendChild(imgElement);
+                                        output.scrollTop = output.scrollHeight;
+                                    })
+                                    .catch(function (error2) {
+                                        console.error('Error in the second request', error2);
+                                    });
+                            }
+                        })
+                        .catch(function (error) {
+                            console.error('Error in the first request', error);
+                        });
+                })
         }
 
 

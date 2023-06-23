@@ -31,7 +31,7 @@ class Game:
             pattern = re.escape(target) + r".*"
             new_string = re.sub(pattern, "", string, flags=re.DOTALL)
             return new_string
-        return remove_text_after(self.story.intro, "游戏开始").strip() + "\n游戏开始："
+        return remove_text_after(self.story.intro, "游戏开始").strip() + "\n游戏开始：\n"
 
     def update(self, player_input: str = None):
         update_stage = True
@@ -91,7 +91,6 @@ class Game:
         #         new_message = SystemMessage(content=RpgPrompt.CHAPTER_START_PROMPT.value.format(self.story.current_chapter_index+1, summarize_result, self.story.get_current_chapter()))
         #         result = bot_generate(self.id, new_message, message_type='system', chat_history=new_chat_history)
         return result, story_end
-
 
 if __name__ == "__main__":
     story = Story('the_rats_in_the_walls')

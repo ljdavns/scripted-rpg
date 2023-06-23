@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Image Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios@0.21.1/dist/axios.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById('btnGenerate').addEventListener('click', function () {
+                const url = 'http://127.0.0.1:7860';
+                const payload = {
+                    prompt: 'Wooden ship sailing in the middle of a storm, rain, rough seas, black clouds, lightning, <lora:VintagePhotos-10:0.85>,retro artstyle, (horror (theme))',
+                    negative_prompt: 'EasyNegativeV2, Bad Image v4, bad-hands-5',
+                    steps: 20,
+                    cfg_scale: 7,
+                    negative_prompt: "",
+                    sampler_name: "Euler a",
+                    width: 512,
+                    height: 512,
+                    batch_size: 2
+                };
+                axios.post(url + '/sdapi/v1/txt2img', payload)
+                    .then(function (response) {
+                        const images = response.data.images;
+                        for (let i = 0; i < images.length; i++) {
+                            const imageSrc = 'data:image/png;base64,' + images[i].split(",", 1)[0];
+                            const png_payload = {
+                                image: imageSrc
+                            };
+                            axios.post(url + '/sdapi/v1/png-info', png_payload)
+                                .then(function (response2) {
+                                    // This part is an approximation of Python's PngInfo
+                                    // As Javascript doesn't have an equivalent functionality
+                                    const pnginfo = response2.data.info;
+
+                                    // Create a new img element for each image
+                                    let imgElement = document.createElement('img');
+                                    imgElement.src = imageSrc;
+                                    imgElement.alt = 'Generated Image ' + (i + 1);
+                                    document.body.appendChild(imgElement);
+
+                                    // Create a new p element for each image info
+                                    // let pInfo = document.createElement('p');
+                                    // pInfo.innerText = 'Image ' + (i + 1) + ' Info: ' + pnginfo;
+                                    // document.body.appendChild(pInfo);
+                                })
+                                .catch(function (error2) {
+                                    console.error('Error in the second request', error2);
+                                });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.error('Error in the first request', error);
+                    });
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <button id="btnGenerate">Generate Image</button>
+    <img id="imgResult" src="#" alt="Generated Image" />
+    <p id="imgInfo"></p>
+</body>
+
+</html>
+
+<!DOCTYPE html>
+<html>

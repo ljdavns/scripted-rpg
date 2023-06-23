@@ -104,7 +104,7 @@ def bot_generate(game_id: str, message: str, history_enabled=True, write_to_hist
                 chat_history.append(AI_message)
             # update_history(chat, game_id)
         else:
-            AI_message = chat(base_messages + [new_message])
+            AI_message = chat([new_message])
     finally:
         if streaming:
             thread_generator.close()

@@ -13,7 +13,7 @@ class Story:
     intro: str = ''
     reveal: str = ''
     chapters: list = []
-    current_chapter_index: int = 0
+    current_chapter_index: int = 3
     current_plots: list = []
     current_plot_index: int = 0
 
@@ -24,15 +24,18 @@ class Story:
         self.reveal = self._get_reveal()
         self.chapters = self._get_chapters()
         self.current_plots = self._get_current_plots()
-        # test
-        self.current_chapter_index = 0
-        self.current_plot_index = 0
 
     def _get_intro(self):
         intro_path = self.story_path + '/intro.txt'
         with open(intro_path, 'r') as f:
             intro = f.read()
         return intro
+
+    def _get_question(self):
+        reveal_path = self.story_path + '/reveal.txt'
+        with open(reveal_path, 'r') as f:
+            reveal = f.read()
+        return reveal
 
     def _get_reveal(self):
         reveal_path = self.story_path + '/reveal.txt'
@@ -69,7 +72,7 @@ class Story:
         story_end = False
         if chapter_end:
             story_end = self._update_chapter()
-        return self.current_plots[self.current_plot_index], chapter_end, story_end
+        return self.current_plots[self.current_plot_index] if not story_end else [], chapter_end, story_end
 
     def get_current_chapter(self):
         return self.chapters[self.current_chapter_index]

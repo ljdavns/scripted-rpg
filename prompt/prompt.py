@@ -87,7 +87,9 @@ class RpgPrompt(Enum):
     SUMMARIZE_CHAPTER_PROMPT: str = "Now this chapter is end, please summarize all the stories of the post chapters after the players pick characters."
     PREVIOUS_SUMMARIZED_CHAPTERS_PROMPT: str = "The previous chapters' summarized stories are: `{}`."
 
-    ANALYZE_PROMPT: str = "Now the story ends, and the [hidden truth] are `{{}}`. You should {}".format(GameStages.ANALYZE.value["goal"])
+    IMAGE_PROMPT: str = "Please summarize this sentence `{}` and output it in English."
+
+    ANALYZE_PROMPT: str = "Now the story ends, you should {}.The questions are: {{}}".format(GameStages.ANALYZE.value["goal"])
 
     REVEAL_PROMPT: str = "Now the player has made the answers. You should {}".format(GameStages.REVEAL.value["goal"])
 
