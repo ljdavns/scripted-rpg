@@ -22,6 +22,7 @@ from game.story import Story
 from game.game import Game
 from pydantic import BaseModel
 from prompt.prompt import RpgPrompt
+import io
 
 app = FastAPI(
     title="Langchain AI API",
@@ -42,9 +43,42 @@ def start():
 class Command(BaseModel):
     message: str
 
+import time
+def slow_string_generator(input_str: str):
+    time.sleep(1)
+    for char in input_str:
+        time.sleep(0.02)
+        if (char == '\n'):
+            time.sleep(0.2)
+        yield char
+
+import re
+def html_tag_generator(input_str: str):
+    tag_pattern = re.compile(r'<[^>]*?>.*?</[^>]*?>')
+    time.sleep(0.5)
+
+    last_index = 0
+    for match in tag_pattern.finditer(input_str):
+        # Yield non-HTML content one character at a time
+        for char in input_str[last_index:match.start()]:
+            time.sleep(0.08)
+            yield char
+        
+        # Yield the entire HTML tag at once
+        time.sleep(1)
+        yield match.group()
+        last_index = match.end()
+
+    # Yield remaining non-HTML content
+    for char in input_str[last_index:]:
+        time.sleep(0.08)
+        yield char
+
 @app.post("/bot")
 async def stream(command: Command):
-    return StreamingResponse(game.update(command.message), media_type='text/event-stream')
+    result = game.update(command.message)
+    # return StreamingResponse(slow_string_generator('66666666666666666666666666666'), media_type='text/event-stream')
+    return StreamingResponse(html_tag_generator(result) if type(result) == str else result, media_type='text/event-stream')
 
 @app.post("/get-image-prompt")
 def get_image_prompt(command: Command):

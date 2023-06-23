@@ -16,11 +16,15 @@ class GameStages(Enum):
     }
     ANALYZE = {
         "name": "analyze",
-        "goal": "Tell the player the story's ending and ask some vital questions based on the [hidden truth]."
+        "goal": "Ask players some questions about the core story."
     }
     REVEAL = {
         "name": "reveal",
-        "goal": "List the above vital questions and their answers, and tell the player the [hidden truth]."
+        "goal": "Output the reveal to players."
+    }
+    END = {
+        "name": "the end",
+        "goal": "the end"
     }
     
     @staticmethod
@@ -89,9 +93,9 @@ class RpgPrompt(Enum):
 
     IMAGE_PROMPT: str = "Please summarize this sentence `{}` and output it in English."
 
-    ANALYZE_PROMPT: str = "Now the story ends, you should {}.The questions are: {{}}".format(GameStages.ANALYZE.value["goal"])
+    ANALYZE_PROMPT: str = "Now the story ends, you should {} and do not edit the question.The questions are: {{}}".format(GameStages.ANALYZE.value["goal"])
 
-    REVEAL_PROMPT: str = "Now the player has made the answers. You should {}".format(GameStages.REVEAL.value["goal"])
+    REVEAL_PROMPT: str = "Now the player has made the answers. You should {} and do not edit the reveal.The reveal is: {{}}".format(GameStages.REVEAL.value["goal"])
 
 if __name__ == "__main__":
     print(GameStages.get_all_items_as_json_str())

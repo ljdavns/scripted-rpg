@@ -107,7 +107,7 @@
                 .then(res => {
                     console.log(res)
                     typeWrite(res.data, false, () => {
-                        handleCommand('start');
+                        handleCommand('start', false);
                     })
                 })
         }
@@ -126,7 +126,7 @@
             input.value = "";
         }
 
-        function handleCommand(command) {
+        function handleCommand(command, draw = true) {
             full_text = ""
             fetch('http://localhost:8000/bot', {
                 method: 'POST',
@@ -137,6 +137,17 @@
                     message: command
                 })
             }).then(response => {
+                console.log(response)
+                // if (!!response.headers.get('content-length')) {
+                //     // If not 'text/event-stream', handle as a normal request
+                //     typeWrite(response.data, false, async () => {
+                //         if (!start) {
+                //             await genImage(text)
+                //             handleCommand('ending')
+                //         }
+                //     })
+                //     return
+                // }
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder('utf-8');
 
@@ -145,11 +156,18 @@
                     if (done) {
                         typeWriteStream("\n");
                         console.log('Stream complete');
-                        genImage(full_text)
+                        if (draw) {
+                            genImage(full_text)
+                        }
                         return;
                     }
                     // Decode the Uint8Array to a string and send to typeWrite()
                     cur_roken = decoder.decode(value);
+                    if (cur_roken == '<div>THE END</div>') {
+                        console.log('the end')
+                        handleCommand('the end', false)
+                        return;
+                    }
                     full_text += cur_roken
                     typeWriteStream(cur_roken);
                     // Read the next chunk
@@ -187,7 +205,7 @@
             output.scrollTop = output.scrollHeight;
         }
 
-        function genImage(prompt) {
+        async function genImage(prompt) {
             axios.post("http://localhost:8000/get-image-prompt", {
                 message: prompt
             })

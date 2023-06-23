@@ -42,21 +42,25 @@ class Game:
             result, story_end = self.story_loop(player_input)
             update_stage = story_end
         elif self.current_stage == GameStages.ANALYZE:
-            prompt = RpgPrompt.ANALYZE_PROMPT.value.format(self.story.reveal)   
-            result = self.bot_callback(game_id=self.id, message=prompt, message_type='system')
+            prompt = RpgPrompt.ANALYZE_PROMPT.value.format(self.story.question)   
+            # result = self.bot_callback(game_id=self.id, message=prompt, message_type='system')
+            result = self.story.question
         elif self.current_stage == GameStages.REVEAL:
             prompt = RpgPrompt.REVEAL_PROMPT.value.format(self.story.reveal)
-            result = self.bot_callback(game_id=self.id, message=prompt, message_type='system')
+            # result = self.bot_callback(game_id=self.id, message=prompt, message_type='system')
+            result = self.story.reveal
         if update_stage:
-            if self.current_stage == GameStages.REVEAL:
-                return result + 'THE END\n'
-            self.current_stage = GameStages.get_list()[GameStages.get_list().index(self.current_stage) + 1]
+            if self.current_stage == GameStages.END:
+                return 'THE END'
+            else:
+                self.current_stage = GameStages.get_list()[GameStages.get_list().index(self.current_stage) + 1]
         return result
 
     def story_loop(self, player_input):
         result = ''
         chapter_end = False
         story_end = False
+        ending_finished = False
         if (not self.story_started):
             # system_prompt = RpgPrompt.STORY_START_PROMPT.value.format(player_input, 1, self.story.get_current_chapter())
             # chat_history = get_chat_history(self.id)
@@ -70,8 +74,9 @@ class Game:
             next_plot, chapter_end, story_end = self.story.update()
             # chat_history = get_chat_history(self.id)
             # chat_history.append(HumanMessage(content=player_input))
-            prompt = RpgPrompt.PLOT_UPDATE_PROMPT.value.format(player_input, next_plot) if (not story_end) else RpgPrompt.PLOT_UPDATE_END_PROMPT.value.format(player_input, next_plot)
-            result = self.bot_callback(game_id=self.id, message=prompt, message_type='system')
+            if (not story_end):
+                prompt = RpgPrompt.PLOT_UPDATE_PROMPT.value.format(player_input, next_plot) if (not story_end) else RpgPrompt.PLOT_UPDATE_END_PROMPT.value.format(player_input, next_plot)
+                result = self.bot_callback(game_id=self.id, message=prompt, message_type='system')
             # result = bot_generate(self.id, player_input, message_type='human')
         if (chapter_end and (not story_end)):
             summarized_result = self.bot_callback(game_id=self.id, message=RpgPrompt.SUMMARIZE_CHAPTER_PROMPT.value, message_type='system')
@@ -79,6 +84,8 @@ class Game:
             new_chat_history = chat_history[:2] + chat_history[-4:-2] + \
                 [SystemMessage(content=RpgPrompt.PREVIOUS_SUMMARIZED_CHAPTERS_PROMPT.value.format(summarized_result))]
             reset_chat_history(self.id, new_chat_history)
+        if (story_end):
+            result, ending_finished = self.story.ending_update()
             # new_message = SystemMessage(content=RpgPrompt.CHAPTER_START_PROMPT.value.format(self.story.current_chapter_index+1, summarize_result, self.story.get_current_chapter()))
             # result = bot_generate(self.id, new_message, message_type='system', chat_history=new_chat_history)
         # if ('章节结束' in result):
@@ -90,7 +97,7 @@ class Game:
         #         clear_chat_history(self.id)
         #         new_message = SystemMessage(content=RpgPrompt.CHAPTER_START_PROMPT.value.format(self.story.current_chapter_index+1, summarize_result, self.story.get_current_chapter()))
         #         result = bot_generate(self.id, new_message, message_type='system', chat_history=new_chat_history)
-        return result, story_end
+        return result, story_end and ending_finished
 
 if __name__ == "__main__":
     story = Story('the_rats_in_the_walls')
