@@ -79,7 +79,8 @@ class Game:
                 result = self.bot_callback(game_id=self.id, message=prompt, message_type='system')
             # result = bot_generate(self.id, player_input, message_type='human')
         if (chapter_end and (not story_end)):
-            summarized_result = self.bot_callback(game_id=self.id, message=RpgPrompt.SUMMARIZE_CHAPTER_PROMPT.value, message_type='system')
+            # has to be synced here
+            summarized_result = bot_generate(game_id=self.id, message=RpgPrompt.SUMMARIZE_CHAPTER_PROMPT.value, message_type='system')
             chat_history = get_chat_history(self.id)
             new_chat_history = chat_history[:2] + chat_history[-4:-2] + \
                 [SystemMessage(content=RpgPrompt.PREVIOUS_SUMMARIZED_CHAPTERS_PROMPT.value.format(summarized_result))]

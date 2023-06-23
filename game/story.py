@@ -64,7 +64,7 @@ class Story:
         return chapters
     
     def _get_current_plots(self):
-        self.current_plot_index = 0
+        self.current_plot_index = -1
         return self.chapters[self.current_chapter_index].split('\n')[1:-1]
     
     def _update_plot(self):
