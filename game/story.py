@@ -14,7 +14,7 @@ class Story:
     question: str = ''
     reveal: str = ''
     chapters: list = []
-    current_chapter_index: int = 3
+    current_chapter_index: int = 0
     current_plots: list = []
     current_plot_index: int = 0
     ending: str = ''
@@ -30,7 +30,6 @@ class Story:
         self.reveal = self._get_reveal()
         self.chapters = self._get_chapters()
         self.current_plots = self._get_current_plots()
-        self.current_plot_index = 4
 
     def _get_intro(self):
         intro_path = self.story_path + '/intro.txt'
