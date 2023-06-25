@@ -84,7 +84,7 @@ class RpgPrompt(Enum):
     #     After updating the plot, give the player related to current plot a new list of actions based on the new plot(the next paragraph) for them to take(and also others for user to input)."
     PLOT_UPDATE_PROMPT: str = "The player has made an [action] `{}`. \
         Please update the story to the [later plot] of `{}`, and produce an opening passage of players' action to the new plot before transitioning into the next fixed storyline. \
-        After updating the plot, let the players input custom action."
+        After updating the plot, give the players a list of actions to chose or input their custom action."
     PLOT_UPDATE_END_PROMPT: str = "The player has made an [action] `{}`. \
         Please update the story to the [later plot] of `{}`, and produce an opening passage of players' action to the new plot before transitioning into the next fixed storyline. \
         Then just output only the storyline to user, do not output the notice to let the player input action."
