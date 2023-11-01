@@ -1,5 +1,5 @@
 import config
-import set_keys
+import set_keys_local
 
 import uvicorn
 from fastapi import FastAPI
