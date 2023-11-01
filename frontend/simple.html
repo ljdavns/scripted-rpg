@@ -103,7 +103,7 @@
         let sendButton = document.getElementById('send-button');
 
         window.onload = () => {
-            axios.post("http://localhost:8000/get-intro")
+            axios.post("http://localhost:8080/get-intro")
                 .then(res => {
                     console.log(res)
                     typeWrite(res.data, false, () => {
@@ -128,7 +128,7 @@
 
         function handleCommand(command, draw = true) {
             full_text = ""
-            fetch('http://localhost:8000/bot', {
+            fetch('http://localhost:8080/bot', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -206,7 +206,7 @@
         }
 
         async function genImage(prompt) {
-            axios.post("http://localhost:8000/get-image-prompt", {
+            axios.post("http://localhost:8080/get-image-prompt", {
                 message: prompt
             })
                 .then(res => {

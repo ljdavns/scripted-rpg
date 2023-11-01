@@ -8,6 +8,8 @@ unstructured[local-inference]
 # apscheduler
 tiktoken
 faiss-cpu
-pinecone-client
+# pinecone-client
 fastapi
 uvicorn
+typing-inspect==0.8.0
+typing_extensions==4.5.0
