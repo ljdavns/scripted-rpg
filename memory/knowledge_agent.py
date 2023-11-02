@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 sys.path.append(str(Path.cwd().parent))
-import set_keys_local
+import set_keys
 import config
 
 from langchain.embeddings.openai import OpenAIEmbeddings

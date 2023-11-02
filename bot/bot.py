@@ -9,7 +9,7 @@ from pathlib import Path
 import sys
 sys.path.append(str(Path.cwd().parent))
 import os
-import set_keys_local
+import set_keys
 import config
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 import threading
