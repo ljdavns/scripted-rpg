@@ -93,7 +93,7 @@ def bot_generate(game_id: str, message: str, history_enabled=True, write_to_hist
         new_message = AIMessage(content=message)
     else:
         raise ValueError("message_type should be one of 'human', 'system' or 'AI'")
-    chat = ChatOpenAI(model_name=os.environ['LOCAL_MODEL_NAME'] if os.environ['LOCAL_MODEL_NAME'] else ("gpt-4" if config.GPT4_ENABLED else "gpt-3.5-turbo-16k"), temperature=temperature, streaming=streaming, callback_manager=callback_manager)
+    chat = ChatOpenAI(model_name=os.environ['LOCAL_MODEL_NAME'] if 'LOCAL_MODEL_NAME' in os.environ else ("gpt-4" if config.GPT4_ENABLED else "gpt-3.5-turbo-16k"), temperature=temperature, streaming=streaming, callback_manager=callback_manager)
     try:
         if history_enabled:
             if game_id not in user_chat_history:
